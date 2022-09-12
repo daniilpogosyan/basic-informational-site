@@ -1,41 +1,36 @@
-const http = require('http');
-const fs = require('fs/promises');
+const express = require('express');
+const app = express();
 
 const hostname = '127.0.0.1';
 const port = '8080';
 
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-type', 'text/html');
-
-  const url = new URL(req.url, `http://${req.headers.host}`);
-
-  let htmlFilename;
-  switch (url.pathname) {
-    case '/': {
-      htmlFilename = 'index.html';
-      break;
-    }
-    case '/about': {
-      htmlFilename = 'about.html';
-      break;
-    }
-    case '/contact-me': {
-      htmlFilename = 'contact-me.html';
-      break;
-    }
-    default: {
-      htmlFilename = '404.html';
-      break;
-    }
+const pages = [
+  {
+    path: '/',
+    html: 'index.html'
+  },
+  {
+    path: '/about',
+    html: 'about.html'
+  },
+  {
+    path: '/contact-me',
+    html: 'contact-me.html'
+  },
+  {
+    path: '*',
+    html: '404.html'
   }
+];
 
-  fs.readFile(__dirname + '/pages/' + htmlFilename, 'utf8')
-  .then(html => {
-    res.end(html);
+function sendPage(page) {
+  app.get(page.path, (req, res) => {
+    res.sendFile(__dirname + '/pages/' + page.html);
   });
-});
+};
 
-server.listen(port, hostname, () => {
+pages.forEach(page => sendPage(page));
+
+app.listen(port, () => {
   console.log('Server is running...');
 })
